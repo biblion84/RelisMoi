@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
     //// PHOTO
     static final int REQUEST_TAKE_PHOTO = 1;
     final private int REQUEST_CODE_ASK_PERMISSIONS = 123;
-
+//TODO autoriser l'enregistrement sur la carte SD a la vole
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent
