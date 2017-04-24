@@ -35,8 +35,9 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String JPEG_FILE_PREFIX = "IMG_";
     private static final String JPEG_FILE_SUFFIX = ".jpg";
+    private static final int MAX_JPEG_SIZE_API = 1000000;
     private ImageView mThumbnail;
-    private String mCurrentPhotoPath;
+    public static String mCurrentPhotoPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,7 +124,6 @@ public class MainActivity extends AppCompatActivity {
 
     private File getAlbumDir() {
         File storageDir = null;
-
         if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
             storageDir = new File(
                     Environment.getExternalStoragePublicDirectory(
@@ -167,12 +167,22 @@ public class MainActivity extends AppCompatActivity {
         bitmap = rotateImage(bitmap, 90); // TODO tourner seulement quand la photo n'est pas prise en portrait
         File file = new File(path.getAbsolutePath());
         try {
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, new FileOutputStream(file));
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, new FileOutputStream(file));
         } catch (Exception e) {
             Log.d("erreur", e.getMessage());
         }
-        bitmap = BitmapFactory.decodeFile(path.getAbsolutePath());
-        Log.d("size bitmap" , String.valueOf(bitmap.getAllocationByteCount()));
+
+        int file_size = Integer.parseInt(String.valueOf(file.length()));
+        if (file_size > MAX_JPEG_SIZE_API){
+            try {
+                bitmap = BitmapFactory.decodeFile(path.getAbsolutePath());
+                bitmap = getResizedBitmap(bitmap, 900);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 50, new FileOutputStream(file));
+            } catch (Exception e){
+                //balec
+            }
+        }
+        Log.d("size jpeg" , String.valueOf(file_size));
         mThumbnail.setImageBitmap(bitmap);
     }
 
@@ -182,5 +192,21 @@ public class MainActivity extends AppCompatActivity {
         matrix.postRotate(angle);
         return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(),
                 matrix, true);
+    }
+
+    public Bitmap getResizedBitmap(Bitmap image, int maxSize) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        float bitmapRatio = (float) width / (float) height;
+        if (bitmapRatio > 1) {
+            width = maxSize;
+            height = (int) (width / bitmapRatio);
+        } else {
+            height = maxSize;
+            width = (int) (height * bitmapRatio);
+        }
+
+        return Bitmap.createScaledBitmap(image, width, height, true);
     }
 }
